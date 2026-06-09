@@ -1,0 +1,29 @@
+spring:
+  application:
+    name: order-service
+
+  # Resolve Secrets Manager values into config at startup (optional so the app
+  # still boots before the secret is populated). IRSA supplies credentials.
+  config:
+    import: "optional:aws-secretsmanager:order-service/config"
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          # Cognito issuer — set via env COGNITO_ISSUER_URI (from Terraform output)
+          issuer-uri: ${COGNITO_ISSUER_URI:}
+
+app:
+  queue-name: order-service-queue
+
+# Probes used by Kubernetes readiness/liveness
+management:
+  endpoint:
+    health:
+      probes:
+        enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: health,info

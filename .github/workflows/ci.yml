@@ -1,0 +1,21 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    uses: manojshr-kan/kan-cloud-platform-ci/.github/workflows/java-build-test.yml@main
+
+  build-and-push:
+    needs: test
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    uses: manojshr-kan/kan-cloud-platform-ci/.github/workflows/build-and-push.yml@main
+    with:
+      image_name: order-service
+    permissions:
+      id-token: write
+      contents: read
