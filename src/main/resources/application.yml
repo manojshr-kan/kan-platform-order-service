@@ -2,17 +2,28 @@ spring:
   application:
     name: order-service
 
-  # Resolve Secrets Manager values into config at startup (optional so the app
-  # still boots before the secret is populated). IRSA supplies credentials.
+  # Startup config from AWS (IRSA supplies credentials):
+  #  - Secrets Manager: app secrets (optional until populated)
+  #  - Parameter Store: shared platform config, incl. the Cognito issuer.
+  #    Terraform rewrites these on every apply, so no value is hardcoded.
   config:
-    import: "optional:aws-secretsmanager:order-service/config"
+    import:
+      - "optional:aws-secretsmanager:order-service/config"
+      - "aws-parameterstore:/kan-cloud-platform/dev/"
 
   security:
     oauth2:
       resourceserver:
         jwt:
-          # Cognito issuer — set via env COGNITO_ISSUER_URI (from Terraform output)
-          issuer-uri: ${COGNITO_ISSUER_URI:}
+          # Sourced from SSM param /kan-cloud-platform/dev/cognito.issuer-uri
+          issuer-uri: ${cognito.issuer-uri}
+
+  cloud:
+    aws:
+      sqs:
+        # The queue is provisioned by Terraform. Never let the app create it
+        # (it has no CreateQueue permission by design). Fail loudly if missing.
+        queue-not-found-strategy: fail
 
 app:
   queue-name: order-service-queue
