@@ -20,6 +20,11 @@ spring:
 
   cloud:
     aws:
+      # Explicit region so the Parameter Store / Secrets Manager clients resolve
+      # the right region at the early config-import phase (env resolution there
+      # is unreliable — caused parameterstore "does not exist").
+      region:
+        static: ap-south-1
       sqs:
         # The queue is provisioned by Terraform. Never let the app create it
         # (it has no CreateQueue permission by design). Fail loudly if missing.
