@@ -8,14 +8,33 @@ on:
 
 jobs:
   test:
-    uses: manojshr-kan/kan-cloud-platform-ci/.github/workflows/java-build-test.yml@main
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: manojshr-kan/kan-cloud-platform-ci/.github/actions/maven-verify@main
 
   build-and-push:
     needs: test
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    uses: manojshr-kan/kan-cloud-platform-ci/.github/workflows/build-and-push.yml@main
-    with:
-      image_name: order-service
+    runs-on: ubuntu-latest
     permissions:
       id-token: write
       contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: version
+        uses: manojshr-kan/kan-cloud-platform-ci/.github/actions/resolve-version@main
+
+      - id: ecr
+        uses: manojshr-kan/kan-cloud-platform-ci/.github/actions/ecr-login@main
+        with:
+          role_arn: ${{ vars.AWS_ROLE_ARN }}
+          region: ${{ vars.AWS_REGION }}
+
+      - uses: manojshr-kan/kan-cloud-platform-ci/.github/actions/docker-build-push@main
+        with:
+          registry: ${{ steps.ecr.outputs.registry }}
+          image_name: order-service
+          immutable_tag: ${{ steps.version.outputs.immutable }}
+          rolling_tag: ${{ steps.version.outputs.rolling }}
