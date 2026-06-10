@@ -54,6 +54,12 @@
             <groupId>io.awspring.cloud</groupId>
             <artifactId>spring-cloud-aws-starter-parameter-store</artifactId>
         </dependency>
+        <!-- Required for IRSA: enables the AWS SDK v2 web-identity credentials
+             provider. Without it the SDK silently falls back to the node role. -->
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>sts</artifactId>
+        </dependency>
         <dependency>
             <groupId>io.awspring.cloud</groupId>
             <artifactId>spring-cloud-aws-starter-sqs</artifactId>
